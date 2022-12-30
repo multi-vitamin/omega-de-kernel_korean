@@ -2,6 +2,7 @@
 
 --------------------------------------
 Korean font
+
 Galmuri11 (https://galmuri.quiple.dev)
 
 Differences from Original Kernel
