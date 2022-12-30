@@ -10,7 +10,14 @@ Differences from Original Kernel
 2. FatFs 0.15 version updated
 3. Corrected a broken first word error when Filename_loop function with long Korean file name
 --------------------------------------
+How to install
 
+1. Download ezkernelnew.bin from release
+2. Move ezkernelnew.bin file to root of sd card
+3. Press and hold R button while booting Omega DE
+4. When update screen appears, release R button and be careful not to turn off the power until completion
+5. After update is completed, change language from Settings to Korean
+--------------------------------------
 ### How to build 
 
     1.you can use latest version of devkitARM.
