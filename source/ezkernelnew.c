@@ -67,7 +67,7 @@ FATFS EZcardFs;
 FILINFO fileinfo;
 DIR dir;
 FIL gfile;
-u8 dwName;
+u32 dwName;
 
 u16 gl_reset_on;
 u16 gl_rts_on;
@@ -572,7 +572,10 @@ void Filename_loop(u32 shift,u32 show_offset,u32 file_select,u32 haveThumbnail)
 	u32 y_offset= 20;	
 	int namelen;
 	static u32 orgtt = 123455;
+	static u32 orgtt2 = 123455;
 	u32 timeout = 20;
+	u32 arrayshot;
+	u32 i;
 	//u8 dwName=0;	
 	char msg[128];
 	char temp_filename[100];
@@ -621,24 +624,77 @@ void Filename_loop(u32 shift,u32 show_offset,u32 file_select,u32 haveThumbnail)
 		namelen = strlen(temp_filename);
 		if(namelen >(char_num-1) ) 
 		{
-			u32  tt = ((shift-timeout)/8)% (namelen);
-			if(orgtt!= tt )
+			u32  tt = ((shift-timeout)/8)% (namelen+4);
+			if((orgtt != tt) && (orgtt2 != tt))
 			{	
 				orgtt = tt ;
-				sprintf(msg,"%s   ",temp_filename + tt);
-				strncpy(msg+strlen(msg) ,temp_filename , 128 - strlen(msg) );
-				if(temp_filename[tt] > 0x80)
-				{						
-					if(dwName)
+				
+				if((tt == 0) && (dwName != 0))
+				{
+					dwName = 0;
+				}
+				
+				if(dwName == 0)
+				{
+					arrayshot = 0;
+				}else
+				{
+				arrayshot = dwName - 1;
+				}
+				
+				if(temp_filename[arrayshot] > 0x7F)
+				{
+					if(dwName == 0)
 					{
-						msg[0] = 0x20;
-						dwName = 0;
+					dwName = 2;
+					}else
+					{
+					dwName++;
 					}
-					else
-						dwName = 1;
+				
+				sprintf(msg,"%s   ",temp_filename + dwName);
+				dwName++;
+				orgtt2 = tt + 1;
 				}
 				else
-					dwName = 0;
+				{
+				sprintf(msg,"%s   ",temp_filename + dwName);
+				dwName++;
+				}
+				
+				strncpy(msg+strlen(msg) ,temp_filename , 128 - strlen(msg) );
+				
+				if(tt>namelen){
+					switch(tt-namelen)
+					{
+						case 1:
+							for(i=0;i < strlen(msg) - 1; i++){
+								msg[i] = msg[i+1];
+							}
+							break;
+							
+						case 2:
+							for(i=0;i < strlen(msg) - 1; i++){
+								msg[i] = msg[i+1];
+							}
+							for(i=0;i < strlen(msg) - 1; i++){
+								msg[i] = msg[i+1];
+							}
+							break;
+						
+						case 3:
+							for(i=0;i < strlen(msg) - 1; i++){
+								msg[i] = msg[i+1];
+							}
+							for(i=0;i < strlen(msg) - 1; i++){
+								msg[i] = msg[i+1];
+							}
+							for(i=0;i < strlen(msg) - 1; i++){
+								msg[i] = msg[i+1];
+							}
+							break;
+					}
+				}
 					
 				Clear(17,20 + file_select*14,(char_num)*6,13,gl_color_selectBG_sd,1);	
 				DrawHZText12(msg, char_num-1, 1+16, y_offset + file_select*14, gl_color_text,1);
@@ -2173,8 +2229,9 @@ re_showfile:
 			}
 			if(continue_MENU) break;
 			if(page_num==SD_list){
-				if(game_folder_total)
+				if(game_folder_total){
 					Filename_loop(shift,show_offset,file_select,short_filename);
+				}
 			}
 				
 	    updata=0;
