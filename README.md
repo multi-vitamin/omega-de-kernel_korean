@@ -1,16 +1,16 @@
 #EZ-FLASH Omega Definitive Edition Kernel
 
 --------------------------------------
-Korean font
+### Korean font
 
 Galmuri11 (https://galmuri.quiple.dev)
 
-Differences from Original Kernel
+### Differences from Original Kernel
 1. Chinese changed to Korean
 2. FatFs 0.15 version updated
 3. Corrected a broken first word error when Filename_loop function with long Korean file name
 --------------------------------------
-How to install
+### How to install
 
 1. Download ezkernelnew.bin from release
 2. Move ezkernelnew.bin file to root of sd card
