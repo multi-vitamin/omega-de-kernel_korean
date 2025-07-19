@@ -67,7 +67,7 @@ FATFS EZcardFs;
 FILINFO fileinfo;
 DIR dir;
 FIL gfile;
-u8 dwName;
+u32 dwName;
 
 u16 gl_reset_on;
 u16 gl_rts_on;
@@ -646,6 +646,7 @@ void Filename_loop(u32 shift,u32 show_offset,u32 file_select,u32 haveThumbnail)
 				{
 					if(dwName == 0)
 					{
+					
 					dwName = 2;
 					}else
 					{
@@ -1365,7 +1366,7 @@ void CheckLanguage(void)
 	{
 		LoadEnglish();
 	}
-	else//√ñ√ê√é√Ñ
+	else//÷–Œƒ
 	{
 		LoadChinese();
 	}
