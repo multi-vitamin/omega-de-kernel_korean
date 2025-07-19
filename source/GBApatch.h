@@ -76,3 +76,4 @@ void Patch_SpecialROM_TrimSize(void);
 u32 Check_game_RTS_FAT(TCHAR *filename,u32 game_save_rts);
 void IWRAM_CODE PatchInternal(u32* Data,int iSize,u32 offset);
 void Patch_SpecialROM_sleepmode(void);
+void Patch_somegame(u32 *Data);
