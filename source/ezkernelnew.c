@@ -24,7 +24,7 @@
 #include "helpwindow.h"
 
 
-#include "goomba.h"
+#include "jagoombacolor.h"
 #include "pocketnes.h"
 
 
@@ -67,7 +67,7 @@ FATFS EZcardFs;
 FILINFO fileinfo;
 DIR dir;
 FIL gfile;
-u32 dwName;
+u8 dwName;
 
 u16 gl_reset_on;
 u16 gl_rts_on;
@@ -572,10 +572,7 @@ void Filename_loop(u32 shift,u32 show_offset,u32 file_select,u32 haveThumbnail)
 	u32 y_offset= 20;	
 	int namelen;
 	static u32 orgtt = 123455;
-	static u32 orgtt2 = 123455;
 	u32 timeout = 20;
-	u32 arrayshot;
-	u32 i;
 	//u8 dwName=0;	
 	char msg[128];
 	char temp_filename[100];
@@ -624,77 +621,24 @@ void Filename_loop(u32 shift,u32 show_offset,u32 file_select,u32 haveThumbnail)
 		namelen = strlen(temp_filename);
 		if(namelen >(char_num-1) ) 
 		{
-			u32  tt = ((shift-timeout)/8)% (namelen+4);
-			if((orgtt != tt) && (orgtt2 != tt))
+			u32  tt = ((shift-timeout)/8)% (namelen);
+			if(orgtt!= tt )
 			{	
 				orgtt = tt ;
-				
-				if((tt == 0) && (dwName != 0))
-				{
-					dwName = 0;
-				}
-				
-				if(dwName == 0)
-				{
-					arrayshot = 0;
-				}else
-				{
-				arrayshot = dwName - 1;
-				}
-				
-				if(temp_filename[arrayshot] > 0x7F)
-				{
-					if(dwName == 0)
+				sprintf(msg,"%s   ",temp_filename + tt);
+				strncpy(msg+strlen(msg) ,temp_filename , 128 - strlen(msg) );
+				if(temp_filename[tt] > 0x80)
+				{						
+					if(dwName)
 					{
-					dwName = 2;
-					}else
-					{
-					dwName++;
+						msg[0] = 0x20;
+						dwName = 0;
 					}
-				
-				sprintf(msg,"%s   ",temp_filename + dwName);
-				dwName++;
-				orgtt2 = tt + 1;
+					else
+						dwName = 1;
 				}
 				else
-				{
-				sprintf(msg,"%s   ",temp_filename + dwName);
-				dwName++;
-				}
-				
-				strncpy(msg+strlen(msg) ,temp_filename , 128 - strlen(msg) );
-				
-				if(tt>namelen){
-					switch(tt-namelen)
-					{
-						case 1:
-							for(i=0;i < strlen(msg) - 1; i++){
-								msg[i] = msg[i+1];
-							}
-							break;
-							
-						case 2:
-							for(i=0;i < strlen(msg) - 1; i++){
-								msg[i] = msg[i+1];
-							}
-							for(i=0;i < strlen(msg) - 1; i++){
-								msg[i] = msg[i+1];
-							}
-							break;
-						
-						case 3:
-							for(i=0;i < strlen(msg) - 1; i++){
-								msg[i] = msg[i+1];
-							}
-							for(i=0;i < strlen(msg) - 1; i++){
-								msg[i] = msg[i+1];
-							}
-							for(i=0;i < strlen(msg) - 1; i++){
-								msg[i] = msg[i+1];
-							}
-							break;
-					}
-				}
+					dwName = 0;
 					
 				Clear(17,20 + file_select*14,(char_num)*6,13,gl_color_selectBG_sd,1);	
 				DrawHZText12(msg, char_num-1, 1+16, y_offset + file_select*14, gl_color_text,1);
@@ -1315,14 +1259,14 @@ u32 IWRAM_CODE Loadfile2PSRAM(TCHAR *filename)
 	{
 		filesize = f_size(&gfile);		
 		Clear(60,160-15,120,15,gl_color_cheat_black,1);	
-		DrawHZText12(gl_writing,0,78,160-15,gl_color_text,1);	
+		DrawHZText12(gl_writing,0,70,160-15,gl_color_text,1);	
 
 		f_lseek(&gfile, 0x0000);
 		for(blocknum=0x0000;blocknum<filesize;blocknum+=0x20000)
 		{		
-			sprintf(msg,"%luMb",(blocknum)/0x20000);
-			Clear(78+54,160-15,110,15,gl_color_cheat_black,1);
-			DrawHZText12(msg,0,78+54,160-15,gl_color_text,1);
+			sprintf(msg,"%luMb/%luMb",(blocknum)/0x20000,filesize/0x20000);
+			Clear(70+54,160-15,110,15,gl_color_cheat_black,1);
+			DrawHZText12(msg,0,70+54,160-15,gl_color_text,1);
 			f_read(&gfile, pReadCache, 0x20000, &ret);//pReadCache max 0x20000 Byte
 			
 			if((gl_reset_on==1) || (gl_rts_on==1) || (gl_sleep_on==1) || (gl_cheat_on==1))		    
@@ -1509,9 +1453,9 @@ u32 IWRAM_CODE LoadEMU2PSRAM(TCHAR *filename,u32 is_EMU)
 	{
 		case 1://gbc
 		case 2://gb	
-			dmaCopy((void*)goomba_gba,pReadCache, goomba_gba_size);
-			dmaCopy((void*)pReadCache,PSRAMBase_S98, goomba_gba_size);
-			rom_start_address = goomba_gba_size;
+			dmaCopy((void*)jagoombacolor_gba,pReadCache, jagoombacolor_gba_size);
+			dmaCopy((void*)pReadCache,PSRAMBase_S98, jagoombacolor_gba_size);
+			rom_start_address = jagoombacolor_gba_size;
 			break;
 		case 3://nes
 			dmaCopy((void*)pocketnes_gba,pReadCache, pocketnes_gba_size);
@@ -2018,6 +1962,7 @@ int main(void) {
 	Read_NOR_info();	
 	gl_norOffset = 0x000000;
 	game_total_NOR = GetFileListFromNor();//initialize to prevent direct writes to NOR without page turning
+
 	if(game_total_NOR==0)
 	{
 		memset(pNorFS,00,sizeof(FM_NOR_FS)*MAX_NOR);
@@ -2229,9 +2174,8 @@ re_showfile:
 			}
 			if(continue_MENU) break;
 			if(page_num==SD_list){
-				if(game_folder_total){
+				if(game_folder_total)
 					Filename_loop(shift,show_offset,file_select,short_filename);
-				}
 			}
 				
 	    updata=0;
@@ -2982,9 +2926,9 @@ re_show_menu:
 						f_read(&gfile, pReadCache, 0x20000, (UINT*)&ret);
 						f_close(&gfile);
 						SetTrimSize(pReadCache,gamefilesize,0x20000,0x0,SAVEMODE);						
-						
 						if((gl_engine_sel==0) || (gl_select_lang == 0xE2E2))
-						{				
+						{	
+								get_find:		
 			    		FAT_table_buffer[0x1F4/4] = SET_PARAMETER_MODE;
 							Send_FATbuffer(FAT_table_buffer,1);												
 			    		res=Loadfile2PSRAM(pfilename);
@@ -2993,8 +2937,15 @@ re_show_menu:
 						}
 						else 
 						{
-			    		use_internal_engine(GAMECODE);	
-			    		Send_FATbuffer(FAT_table_buffer,0);//Loading rom	
+			    		res=use_internal_engine(GAMECODE);	
+			    		if(res == 1) 
+			    		{
+			    			Send_FATbuffer(FAT_table_buffer,0);//Loading rom	
+			    		}
+			    		else
+			    		{
+			    			goto get_find;
+			    		}
 						}
 					}	
 	    		Patch_SpecialROM_sleepmode();//
